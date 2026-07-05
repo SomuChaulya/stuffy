@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 
+import { auth, currentUser } from "@clerk/nextjs/server";
+
 const userPaths = ["/portal/employees", "/portal/attendance", "/portal/time-off", "/portal/profile"];
 
 function revalidateUserRoutes() {
@@ -34,10 +36,9 @@ function dateTimeValue(formData, dateName, timeName) {
 }
 
 async function getCurrentEmployee() {
-  const cookieStore = await cookies();
-  const employeeId = cookieStore.get("hrms-user-id")?.value;
-  if (!employeeId) return null;
-  return prisma.user.findUnique({ where: { id: employeeId }, include: { profile: true } });
+  const { userId } = await auth();
+  if (!userId) return null;
+  return prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
 }
 
 export async function setCurrentEmployee(formData) {
@@ -185,4 +186,84 @@ export async function createLeaveRequest(formData) {
 
   revalidateUserRoutes();
   return { success: true, message: "Leave request submitted" };
+}
+
+export async function submitOnboarding(formData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not authenticated");
+
+  const clerkUser = await currentUser();
+  const email = clerkUser?.emailAddresses[0]?.emailAddress;
+  if (!email) throw new Error("Could not retrieve Clerk user email.");
+
+  const firstName = text(formData, "firstName");
+  const lastName = text(formData, "lastName");
+  const phone = optionalText(formData, "phone");
+  const address = optionalText(formData, "address");
+  const gender = optionalText(formData, "gender");
+  const dobVal = optionalText(formData, "dob");
+  const dob = dobVal ? new Date(dobVal) : null;
+  const department = text(formData, "department", "General");
+  const designation = text(formData, "designation", "Employee");
+  const basicSalary = Number(text(formData, "basicSalary", "45000"));
+  const bankName = optionalText(formData, "bankName");
+  const accountNumber = optionalText(formData, "accountNumber");
+  const emergencyName = optionalText(formData, "emergencyName");
+  const emergencyPhone = optionalText(formData, "emergencyPhone");
+
+  if (!firstName || !lastName) {
+    throw new Error("First name and last name are required.");
+  }
+
+  // Generate a unique employee ID dynamically
+  let employeeId = "";
+  let isUnique = false;
+  while (!isUnique) {
+    employeeId = "EMP-" + Math.floor(1000 + Math.random() * 9000);
+    const existing = await prisma.user.findFirst({ where: { employeeId } });
+    if (!existing) {
+      isUnique = true;
+    }
+  }
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (existingUser) {
+    throw new Error("An onboarding profile already exists for this account.");
+  }
+
+  // Create user and profile
+  await prisma.user.create({
+    data: {
+      id: userId,
+      employeeId,
+      email,
+      role: "EMPLOYEE",
+      isVerified: false, // Default to false until accepted by admin
+      profile: {
+        create: {
+          firstName,
+          lastName,
+          phone,
+          address,
+          gender,
+          dob,
+          joiningDate: new Date(),
+          designation,
+          department,
+          basicSalary,
+          bankName,
+          accountNumber,
+          emergencyName,
+          emergencyPhone,
+        },
+      },
+    },
+  });
+
+  revalidateUserRoutes();
+  redirect("/onboarding/pending");
 }

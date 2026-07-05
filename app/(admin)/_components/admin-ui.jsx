@@ -1,12 +1,13 @@
 import {
   addDocument,
   createEmployee,
-  createLeaveRequestForEmployee,
   generatePayroll,
   recordAttendance,
   reviewLeaveRequest,
   sendNotification,
   updateUserStatus,
+  acceptOnboarding,
+  rejectOnboarding,
 } from "@/action/adminActions";
 import {
   formatCurrency,
@@ -16,6 +17,7 @@ import {
   getDisplayName,
 } from "@/action/adminQueries";
 
+
 export const fieldClass =
   "h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 export const labelClass =
@@ -24,6 +26,7 @@ export const buttonClass =
   "inline-flex h-10 items-center justify-center rounded-md bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800";
 export const ghostButtonClass =
   "inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50";
+
 
 export function PageTitle({ eyebrow, title, description }) {
   return (
@@ -79,6 +82,8 @@ export function EmployeeSelect({ users, name = "employeeId", required = true }) 
 }
 
 export function DashboardOverview({ data }) {
+  const pendingOnboarding = data.users.filter((user) => !user.isVerified);
+
   return (
     <>
       <PageTitle
@@ -113,9 +118,64 @@ export function DashboardOverview({ data }) {
           <StatCard label="Monthly Salary" value={data.stats.totalMonthlySalaryLabel} />
         </div>
       </section>
+
+      {/* Pending Onboarding Requests */}
+      <section className="mt-8">
+        <h3 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <span>Pending Onboarding Requests</span>
+          <span className="inline-flex items-center justify-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+            {pendingOnboarding.length}
+          </span>
+        </h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {pendingOnboarding.length > 0 ? (
+            pendingOnboarding.map((user) => (
+              <div key={user.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-800">
+                      {getDisplayName(user).slice(0, 1).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-950">{getDisplayName(user)}</h4>
+                      <p className="text-xs text-slate-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-1.5 text-xs text-slate-600">
+                    <p><strong className="text-slate-800">Employee ID:</strong> {user.employeeId}</p>
+                    <p><strong className="text-slate-800">Role:</strong> {user.role}</p>
+                    <p><strong className="text-slate-800">Department:</strong> {user.profile?.department || "General"}</p>
+                    <p><strong className="text-slate-800">Designation:</strong> {user.profile?.designation || "Employee"}</p>
+                    <p><strong className="text-slate-800">Salary:</strong> {formatCurrency(user.profile?.basicSalary)}</p>
+                  </div>
+                </div>
+                <div className="mt-5 flex gap-2">
+                  <form action={acceptOnboarding} className="flex-1">
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button type="submit" className="w-full inline-flex h-9 items-center justify-center rounded-md bg-emerald-600 text-xs font-bold text-white transition hover:bg-emerald-700 cursor-pointer">
+                      Accept
+                    </button>
+                  </form>
+                  <form action={rejectOnboarding} className="flex-1">
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button type="submit" className="w-full inline-flex h-9 items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-xs font-bold text-rose-700 transition hover:bg-rose-100 cursor-pointer">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full">
+              <EmptyState>No pending onboarding requests.</EmptyState>
+            </div>
+          )}
+        </div>
+      </section>
     </>
   );
 }
+
 
 function EmployeeCard({ user }) {
   const profile = user.profile;
@@ -403,7 +463,6 @@ export function AttendanceRoute({ data }) {
 }
 
 export function TimeOffRoute({ data }) {
-  const usersForForms = data.users.length ? data.users : data.employees;
   const adminId = data.admin?.id || "";
 
   return (
@@ -413,39 +472,12 @@ export function TimeOffRoute({ data }) {
         title="Time Off"
         description="Admins and HR can view, approve, and reject leave requests for all employees."
       />
-      <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
-        <form
-          action={createLeaveRequestForEmployee}
-          className="rounded-lg border border-slate-200 bg-white p-4"
-        >
-          <h3 className="text-lg font-bold">Create Leave Request</h3>
-          <div className="mt-4 grid gap-3">
-            <EmployeeSelect users={usersForForms} />
-            <select name="leaveType" defaultValue="PAID" className={fieldClass}>
-              <option value="PAID">Paid Time Off</option>
-              <option value="SICK">Sick Time Off</option>
-              <option value="UNPAID">Unpaid Leave</option>
-            </select>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input name="startDate" type="date" required className={fieldClass} />
-              <input name="endDate" type="date" required className={fieldClass} />
-            </div>
-            <textarea
-              name="reason"
-              required
-              placeholder="Reason"
-              className="min-h-24 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-            />
-            <button className={buttonClass} type="submit">
-              Add Request
-            </button>
-          </div>
-        </form>
-
-        <div className="grid gap-3">
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold text-slate-950">Employee Leave Requests</h3>
+        <div className="grid gap-4 md:grid-cols-2">
           {data.leaveRequests.length ? (
             data.leaveRequests.map((leave) => (
-              <article key={leave.id} className="rounded-lg border border-slate-200 bg-white p-4">
+              <article key={leave.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h3 className="font-bold text-slate-950">{getDisplayName(leave.employee)}</h3>
@@ -455,40 +487,55 @@ export function TimeOffRoute({ data }) {
                     </p>
                     <p className="mt-2 text-sm text-slate-700">{leave.reason}</p>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    leave.status === "APPROVED" ? "bg-emerald-100 text-emerald-800" :
+                    leave.status === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                    "bg-amber-100 text-amber-800"
+                  }`}>
                     {leave.status}
                   </span>
                 </div>
-                <form action={reviewLeaveRequest} className="mt-4 flex flex-wrap items-center gap-2">
-                  <input type="hidden" name="leaveId" value={leave.id} />
-                  <input type="hidden" name="adminId" value={adminId} />
-                  <input
-                    name="adminComment"
-                    className={fieldClass}
-                    placeholder="Admin comment"
-                    defaultValue={leave.adminComment || ""}
-                  />
-                  <button
-                    className="h-9 rounded-md bg-emerald-600 px-3 text-sm font-bold text-white hover:bg-emerald-700"
-                    name="status"
-                    value="APPROVED"
-                    type="submit"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="h-9 rounded-md bg-rose-600 px-3 text-sm font-bold text-white hover:bg-rose-700"
-                    name="status"
-                    value="REJECTED"
-                    type="submit"
-                  >
-                    Reject
-                  </button>
-                </form>
+                
+                {leave.status === "PENDING" && (
+                  <form action={reviewLeaveRequest} className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+                    <input type="hidden" name="leaveId" value={leave.id} />
+                    <input type="hidden" name="adminId" value={adminId} />
+                    <input
+                      name="adminComment"
+                      className={`${fieldClass} flex-1`}
+                      placeholder="Admin comment"
+                      defaultValue={leave.adminComment || ""}
+                    />
+                    <button
+                      className="h-9 rounded-md bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
+                      name="status"
+                      value="APPROVED"
+                      type="submit"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="h-9 rounded-md bg-rose-600 px-4 text-xs font-bold text-white hover:bg-rose-700 transition cursor-pointer"
+                      name="status"
+                      value="REJECTED"
+                      type="submit"
+                    >
+                      Reject
+                    </button>
+                  </form>
+                )}
+
+                {leave.status !== "PENDING" && leave.adminComment && (
+                  <div className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                    <strong>Admin Comment:</strong> {leave.adminComment}
+                  </div>
+                )}
               </article>
             ))
           ) : (
-            <EmptyState>No time off records yet.</EmptyState>
+            <div className="col-span-2">
+              <EmptyState>No time off records yet.</EmptyState>
+            </div>
           )}
         </div>
       </div>

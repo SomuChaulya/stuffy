@@ -1,4 +1,4 @@
-import { PrismaNeonHttp } from "@prisma/adapter-neon";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/app/generated/prisma/client";
 
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
@@ -9,7 +9,7 @@ if (!connectionString) {
 
 const globalForPrisma = globalThis;
 
-const adapter = new PrismaNeonHttp(connectionString, {});
+const adapter = new PrismaPg({ connectionString });
 
 export const prisma =
   globalForPrisma.prisma ||
@@ -20,3 +20,6 @@ export const prisma =
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+
+

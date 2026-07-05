@@ -3,4 +3,6 @@ const nextConfig = {
   /* config options here */
 };
 
+// Trigger reload
 export default nextConfig;
+

@@ -9,9 +9,10 @@
     "db:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "node --experimental-strip-types prisma/seed.mjs"
+    "seed": "npx tsx prisma/seed.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.5.12",
     "@prisma/adapter-neon": "^7.8.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",

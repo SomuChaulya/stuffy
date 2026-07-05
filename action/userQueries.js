@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/app/lib/prisma";
 
@@ -26,8 +27,8 @@ function computeStatus(attendance, leaveRequests) {
 }
 
 async function getSessionEmployeeId() {
-  const cookieStore = await cookies();
-  return cookieStore.get("hrms-user-id")?.value || null;
+  const { userId } = await auth();
+  return userId || null;
 }
 
 export async function getCurrentEmployee() {

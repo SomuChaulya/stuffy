@@ -256,3 +256,32 @@ export async function sendNotification(formData) {
 
   revalidateAdminRoutes();
 }
+
+export async function acceptOnboarding(formData) {
+  requireAdminAccess();
+
+  const userId = text(formData, "userId");
+  if (!userId) throw new Error("User ID is required.");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isVerified: true },
+  });
+
+  revalidateAdminRoutes();
+}
+
+export async function rejectOnboarding(formData) {
+  requireAdminAccess();
+
+  const userId = text(formData, "userId");
+  if (!userId) throw new Error("User ID is required.");
+
+  await prisma.$transaction([
+    prisma.employeeProfile.deleteMany({ where: { userId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
+
+  revalidateAdminRoutes();
+}
+

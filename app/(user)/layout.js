@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentEmployee, getMyCurrentAttendance } from "@/action/userQueries";
-import { clearCurrentEmployee } from "@/action/userActions";
+import { getMyCurrentAttendance } from "@/action/userQueries";
+import { prisma } from "@/app/lib/prisma";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { SignOutButton } from "@clerk/nextjs";
+
 
 const navItems = [
   { href: "/portal/employees", label: "Employees" },
@@ -15,11 +18,48 @@ export const metadata = {
 };
 
 export default async function UserLayout({ children }) {
-  const [employee, currentAttendance] = await Promise.all([getCurrentEmployee(), getMyCurrentAttendance()]);
-
-  if (!employee) {
+  const { userId } = await auth();
+  if (!userId) {
     redirect("/");
   }
+
+  // Fetch or link database user
+  let employee = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { profile: true },
+  });
+
+  if (!employee) {
+    const clerkUser = await currentUser();
+    const email = clerkUser?.emailAddresses[0]?.emailAddress;
+    if (email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+        include: { profile: true },
+      });
+      if (existingUser) {
+        employee = await prisma.user.update({
+          where: { email },
+          data: { id: userId },
+          include: { profile: true },
+        });
+      }
+    }
+  }
+
+  if (!employee) {
+    redirect("/onboarding");
+  }
+
+  if (!employee.isVerified) {
+    redirect("/onboarding/pending");
+  }
+
+  if (employee.role !== "EMPLOYEE") {
+    redirect("/dashboard");
+  }
+
+  const currentAttendance = await getMyCurrentAttendance();
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -53,14 +93,15 @@ export default async function UserLayout({ children }) {
               </button>
               <div className="absolute right-0 mt-2 hidden min-w-40 rounded-md border border-slate-200 bg-white p-2 shadow-sm group-hover:block">
                 <Link href="/portal/profile" className="block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">My Profile</Link>
-                <form action={clearCurrentEmployee}>
-                  <button className="block w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50" type="submit">Log Out</button>
-                </form>
+                <SignOutButton redirectUrl="/">
+                  <button className="block w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 cursor-pointer">Log Out</button>
+                </SignOutButton>
               </div>
             </div>
           </nav>
         </div>
       </header>
+
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</div>
     </main>
   );
