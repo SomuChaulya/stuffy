@@ -67,7 +67,7 @@ export default async function UserLayout({ children }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
-              Human Resource Management System
+              Staffy HRMS
             </p>
             <h1 className="text-xl font-bold">Employee Portal</h1>
           </div>
@@ -91,11 +91,13 @@ export default async function UserLayout({ children }) {
                   {currentAttendance?.checkIn && !currentAttendance?.checkOut ? "In" : "Out"}
                 </span>
               </button>
-              <div className="absolute right-0 mt-2 hidden min-w-40 rounded-md border border-slate-200 bg-white p-2 shadow-sm group-hover:block">
-                <Link href="/portal/profile" className="block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">My Profile</Link>
-                <SignOutButton redirectUrl="/">
-                  <button className="block w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 cursor-pointer">Log Out</button>
-                </SignOutButton>
+              <div className="absolute right-0 top-full pt-1 hidden min-w-40 group-hover:block z-30">
+                <div className="rounded-md border border-slate-200 bg-white p-2 shadow-sm">
+                  <Link href="/portal/profile" className="block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">My Profile</Link>
+                  <SignOutButton redirectUrl="/">
+                    <button className="block w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 cursor-pointer">Log Out</button>
+                  </SignOutButton>
+                </div>
               </div>
             </div>
           </nav>

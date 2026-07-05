@@ -39,7 +39,7 @@ export default async function OnboardingPage() {
           <div className="flex justify-center items-center gap-2 mb-2">
             <span className="h-4 w-4 bg-[#00d992] rounded-sm inline-block" />
             <span className="font-mono text-xs uppercase tracking-[0.25em] text-white font-bold">
-              ADAMAS CONNECT
+              STAFFY
             </span>
           </div>
           <h1 className="text-3xl font-extrabold text-white">Complete Profile Onboarding</h1>

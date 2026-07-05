@@ -33,7 +33,7 @@ export default async function OnboardingPendingPage() {
         <div className="flex justify-center items-center gap-2 mb-6">
           <span className="h-4 w-4 bg-[#00d992] rounded-sm inline-block" />
           <span className="font-mono text-xs uppercase tracking-[0.25em] text-white font-bold">
-            ADAMAS CONNECT
+            STAFFY
           </span>
         </div>
 

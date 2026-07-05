@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Adamas HRMS",
+  title: "Staffy HRMS",
   description: "Lightweight HRMS powered by Clerk",
 };
 

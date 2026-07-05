@@ -65,7 +65,7 @@ export default async function AdminLayout({ children }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
-              Human Resource Management System
+              Staffy HRMS
             </p>
             <h1 className="text-xl font-bold">Admin</h1>
           </div>

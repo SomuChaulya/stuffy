@@ -14,7 +14,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <span className="h-5 w-5 bg-[#00d992] rounded-sm inline-block" />
             <span className="font-mono text-sm uppercase tracking-[0.25em] text-white font-bold">
-              ADAMAS CONNECT
+              STAFFY
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-wider">
@@ -54,7 +54,7 @@ export default function LandingPage() {
         {/* Brand Information */}
         <div className="lg:col-span-7 space-y-6">
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-[#00d992]">
-            Voltagent Designed / Developer HR Portal
+            Designed & Developed by @somu.dev / Staffy HR Portal
           </p>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-none">
             Lightweight HRMS <br className="hidden sm:inline" />
@@ -79,7 +79,7 @@ export default function LandingPage() {
         {/* Interactive Auth Card */}
         <div className="lg:col-span-5">
           <div className="border border-[#3d3a39] bg-[#1a1a1a] rounded-xl p-8 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[300px]">
-            <h3 className="text-xl font-bold text-white mb-2">Welcome to Adamas</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Welcome to Staffy</h3>
             <p className="text-xs text-slate-400 mb-8 text-center">
               Please sign in or create a new account to access the employee portal and HR features.
             </p>
@@ -130,7 +130,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <span className="h-4 w-4 bg-[#00d992] rounded-sm inline-block" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white font-bold">
-              ADAMAS CONNECT
+              STAFFY
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[#8b949e] font-medium">
@@ -141,7 +141,7 @@ export default function LandingPage() {
               Status: <span className="inline-block h-2 w-2 rounded-full bg-[#00d992]"></span> Operational
             </span>
           </div>
-          <p className="text-[#8b949e]">&copy; 2026 HRMS. All rights reserved.</p>
+          <p className="text-[#8b949e]">&copy; 2026 Staffy. All rights reserved. Made by @somu.dev</p>
         </div>
       </footer>
     </div>

@@ -90,7 +90,7 @@ export function EmployeeDetailView({ employee, currentEmployee }) {
           <div className="flex justify-between gap-3"><dt>Gender</dt><dd>{profile?.gender || "Not set"}</dd></div>
           <div className="flex justify-between gap-3"><dt>Joining Date</dt><dd>{formatDate(profile?.joiningDate)}</dd></div>
           <div className="flex justify-between gap-3"><dt>Manager</dt><dd>Not available</dd></div>
-          <div className="flex justify-between gap-3"><dt>Company</dt><dd>Adamas</dd></div>
+          <div className="flex justify-between gap-3"><dt>Company</dt><dd>Staffy</dd></div>
         </dl>
       </div>
     </div>
